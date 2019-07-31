@@ -1,0 +1,4 @@
+colorlog
+jinja2
+schema
+requests

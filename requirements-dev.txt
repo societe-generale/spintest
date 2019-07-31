@@ -1,0 +1,8 @@
+flake8
+bandit
+pytest
+pytest-cov
+bumpversion
+black
+doubles
+httpretty
