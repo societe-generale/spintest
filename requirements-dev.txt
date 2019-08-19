@@ -6,3 +6,5 @@ bumpversion
 black
 doubles
 httpretty
+coveralls
+-r requirements.txt

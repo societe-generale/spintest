@@ -2,13 +2,13 @@
 
 Functional scenario interpreter.
 
-Spintest is a library that facilitate the integration and functional test of APIs. It takes a list of URLs in parameter and a list of tasks (also called scenario) that will be executed against the specified URLs.
+Spintest is a library that facilitates the integration and functional test of APIs. It takes a list of URLs in parameter and a list of tasks (also called scenario) that will be executed against the specified URLs.
 
-Each task represents an API call and provides some options in order to validate or react to the response. Indeed, by default the task is in success if the HTTP code returned is between `200` and `299` included but you can specify the error code or the body you expect. You can also provide a list of rollback tasks (or task references) that is executed if the task fails.
+Each task represents an API call and provides some options in order to validate or react to the response. Indeed, by default the task is in success if the HTTP code returned is between `200` and `299` included, but you can specify the error code or the body you expect. You can also provide a list of rollback tasks (or task references) that is executed if the task fails.
 
 Also, the response of the API call can be stored in order to be used in a future task.
 
-Finally you can choose to run the task scenario concurently on each URL.
+Finally, you can choose to run the task scenario concurrently on each URL.
 
 ## Installation
 
@@ -16,12 +16,6 @@ You can install the package using PIP.
 
 ```
 $ pip install spintest
-```
-
-Alternatively, you can use pipenv :
-
-```
-$ pipenv install spintest
 ```
 
 ## URLs and tasks definition
@@ -149,7 +143,7 @@ assert True is result
 
 Here we provided two URLS and we have added the option `parallel` in `spintest` function. Without this option, the scenario will be executed iteratively on every URLS.
 
-But with this option, the each task of the scenario will be executed concurently for every URLS.
+But with this option, the each task of the scenario will be executed concurrently for every URLS.
 
 One last word on the expected option. Here we want to validate that a certain key (`result`) is present from the output. We don't mind about the value of this key so we just set it to `None`. The option `expected_match` set to `partial` indicates that we don't want to a task failure if there is more key in the API response than expected.
 

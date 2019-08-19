@@ -1,0 +1,32 @@
+language: python
+python:
+  - "3.6.5"
+
+stages:
+  - Quality
+  - Publish
+
+install:
+  - make install-dev
+
+jobs:
+  include:
+    - stage: Quality
+      name: lint
+      script: make lint
+    - name: tests
+      script: make test
+    - stage: Publish
+      script: skip
+      deploy:
+        provider: pypi
+        user: matthieugouel
+        distributions: sdist bdist_wheel
+        password:
+          secure: ClhrP3g6QyvzuQ8EvGH2x2ULvSxKG73YtLCy7c+oNIGjz+ueckMwjRuJkLIlc2eAeWhsNM0V6ngcgI4b0SQW8OwP/KCXEBEvAh02a7Nf8nsoZMkaXOzFHM6XQ1Buz32kEZZx+HizhwbVmnA7VwaDIIAe9HVKt6Dm9sgRc6uyKs4hWQD2FAaWR0h3/s8n8dN+GYbgYhsHP1hWGprNdRSe1SyKmfsS+aU0nif5Wa9cgrnobwSL7Zz7vJXY9qxf7SlkLftMQe9PgWWDR/BpLhmJVS9zyK+kGlvbwD+ry6UQ4xY+YBi2i2kVBfoU+bsVItH/f04BKS3/SWwxBgKp6bLgv9wI0hfN0N9eWW73ia7UPhShgAxk+h1ZyZsBAHjUzgmg+q57tDeeKkKU/2DKVKL+Hj3Rx/vm6QIu1+kn5T3hxdJkOm2ynQGHXnDoiYn1QYrT/OjoZN6aI+cFYZa/Y9vQT+RjpsT+NeL+2Gbj1Bdzpwl4xXSfgGtQViGYzX3mvlurnvR0f48gOpTUtluy5oQs2Ef6uUKz6VsfHTY1ahVNkGs73agGh3o1mFwSbLrwZaL+MxCLTHBRP/KOeuTR4grk4uLfpsyonL0utoaohVD2CXpCd4KMwg4GJ3FIHqLjuXRjhrO9Z80eoS15u0hUVIFw1gKKgdXergHH7wWjqUTgbas=
+        on:
+          tags: true
+      if: tag IS present
+
+after_success:
+    coveralls

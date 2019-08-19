@@ -583,18 +583,6 @@ def test_task_basic_templating():
     httpretty.reset()
 
 
-def test_task_endpoint_unavailable():
-    """Test spintest against unavailable endpoint."""
-    httpretty.enable()
-
-    result = spintest(["http://test.com"], [{"method": "GET", "route": "/test"}])
-
-    assert False is result
-
-    httpretty.disable()
-    httpretty.reset()
-
-
 def test_task_invalid_task_no_method():
     """Test spintest with an invalid task."""
     httpretty.enable()
@@ -912,10 +900,10 @@ def test_task_next_async():
     """Test spintest accessing with next asynchronously."""
     httpretty.enable()
     httpretty.register_uri(
-        httpretty.GET, "http://foo.com/test", body=json.dumps({"foo": "bar"})
+        httpretty.GET, "http://foo.com/test"
     )
     httpretty.register_uri(
-        httpretty.GET, "http://bar.com/test", body=json.dumps({"foo": "bar"})
+        httpretty.GET, "http://bar.com/test"
     )
 
     loop = asyncio.new_event_loop()
@@ -940,10 +928,10 @@ def test_task_next_async_failed():
     """Test spintest accessing with next asynchronously."""
     httpretty.enable()
     httpretty.register_uri(
-        httpretty.GET, "http://foo.com/test", body=json.dumps({"foo": "bar"})
+        httpretty.GET, "http://foo.com/test"
     )
     httpretty.register_uri(
-        httpretty.GET, "http://bar.com/bar", body=json.dumps({"foo": "bar"})
+        httpretty.GET, "http://bar.com/test", status=500
     )
 
     loop = asyncio.new_event_loop()

@@ -4,17 +4,11 @@ Here is some guidelines to contribute efficiently to this project.
 
 ## Installation
 
-The package management is handled by [pipenv](https://docs.pipenv.org/en/latest/). You can
-install it on your system like any other Python package.
+
+You can easily install the project's development dependencies.
 
 ```
-$ pip install pipenv
-```
-
-Now you can easily install the project's development dependencies.
-
-```
-$ make env-dev
+$ make install-dev
 ```
 
 To enter pipenv's shell

@@ -1,43 +1,39 @@
 APP=spintest
 TESTS=tests
 
-RUNPIP=pipenv run
 MINCOV=92
 REPORTS=./build/test-reports
 
 ## Quality
 
 lint:
-	$(RUNPIP) flake8 --doctests $(APP) $(TESTS)
+	flake8 --doctests $(APP) $(TESTS)
 
 bandit:
-	$(RUNPIP) bandit -r -l -i $(APP)
+	bandit -r -l -i $(APP)
 
 test:
-	$(RUNPIP) py.test --cov=$(APP) --cov-report term-missing -vs --cov-fail-under=$(MINCOV)
+	py.test --cov=$(APP) --cov-report term-missing -vs --cov-fail-under=$(MINCOV)
 
 test-debug:
-	$(RUNPIP) py.test --pdb
+	py.test --pdb
 
 test-cov:
-	 $(RUNPIP) py.test --cov=$(APP) --cov-fail-under=$(MINCOV) --cov-report xml:$(REPORTS)/coverage.xml --junitxml=$(REPORTS)/junit-pytest.xml
+	py.test --cov=$(APP) --cov-fail-under=$(MINCOV) --cov-report xml:$(REPORTS)/coverage.xml --junitxml=$(REPORTS)/junit-pytest.xml
 
 quality: lint test bandit
 
 format:
-	@$(RUNPIP) black -l 88 $(APP) $(TESTS)
+	black -l 88 $(APP) $(TESTS)
 
 
-## Utilities
+## Installation
 
-env:
-	@pipenv install
+install:
+	pip install -r requirements.txt
 
-env-dev:
-	@pipenv install --dev
-
-shell:
-	@pipenv shell
+install-dev:
+	pip install -r requirements-dev.txt -e .
 
 
-.PHONY: lint test test-debug test-cov quality format env env-dev shell
+.PHONY: lint test test-debug test-cov quality format install install-dev
