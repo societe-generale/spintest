@@ -58,7 +58,7 @@ class Task(object):
         """Response body formatter."""
         try:
             return self.response.json()
-        except json.JSONDecodeError:
+        except ValueError:
             return self.response.text
         except AttributeError:
             return None
