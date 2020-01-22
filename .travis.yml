@@ -17,10 +17,10 @@ jobs:
     script: skip
     deploy:
       provider: pypi
-      user: kyp76
+      user: "__token__"
       distributions: sdist bdist_wheel
       password:
-        secure: bw8EhqxWjuIj2e7dcx7VoGgxeMHJKhEriQpeKc6C104GrmuM/z/Lyb7Tdf01KExoa31N6Zl2EXPgMDWv+DV3S0qLLwBYlSsVYx4mrVcdXqKoD0dWVk8RWaSY6ixaifKOpuRCvXBkAUs3ETl6bhpwkg/AeGD4xEw81niZkRV7xKt/+3oOBLE+1MGFPTnKDJDWSZe5tomNEml0Dq5tHGZSiIXPerdmy6T1vXY8VLJGSNIM71bTNwRJK3cECTc9Px++BUO/OfBO6E2EL6ivgKArlAzkGK5doOCpDndaQQb82PSbHVKcvbpgFl1uoFAbW0kSUnqz4t7JyJrIejh1iREzJ9daFId9ciZjLN8YUUarSqFKgY5YHfJMG+7YNGyROVf9kfC72T8cH6e39bNj2CEKhW+XjqAqGKM9Ski1QS9UIqwRaJG1kWm2Gr3vjXyEGVhwGgmVrPkMO1A7wAkcx0kXB4gqExRvT6QaZ7VXud0tLmL7qYjE4b8SxYFNEVAadXHKL3BVme76/xX0a9+APGlJzymF7vJ/uu+f3qKSeozsJl2qxjQytCemQfslohoJ/469y3BC9xz3/57BiVcp6YGY2P5XwFCdP7+Q8VXONW2jTBWvc/d/bH7BUI8rYYsn0rCkYA0pQXjwWzxfNeaoGkT9EImXnnBIyp4zFDWw44kJkpM=
+        secure: kWew3Qb3pqAHiU/MWd3dPDT3+MDt6oNwgsymnwMlGeYFvD3cpjdwxLBkcKpKvD8GeFh8Divub1Qoq/CI7cJrBKVHTVLyC7ggTQXUZrvaG2ZdJws63zWUrg32Dj1+tENO2Sl3XEht0u+k1M5dlHOaTmHjDXaD+L9mK7NfRQYHvTRB2xuce7Db8WgktNYrCXc7wvhYXCicFihBBCVvFT3WvptUUy1aqD6gsVyAWqb8xTzMS10QWCgVBQd/sHhYLsAuOGEQGf2Y46B79soAmOmYEn4k/76hH9oZ4JtU1n8AClSxFAXVnMbHeuaC7pkmwsZ8KiF90Odv+O3zunMJgOuzXPoh7oWKDEOcb5vOxqGDfjlYyR63ocHULtpZ5eIRtKN6ECX23D0tqun9AVZfyn8QX3jkrMsO2mvVe3l5HAkHsBv5EDWeyLhxgl/60XpxcNFtL49LNm4QIjhYkxohnuvbhpBqiMptTJHI0UAR/z41P0UZg/qR6AdYLjurioD50NLDnXQ0NUVe5kOZq1gDGL4HRwGW55M+q5KgVAo65FPWw5chRlfrIUSv/dyTIHBYD4zjR8uht9yD8KsvBVW0mi30QGXCGG+mch5IUnoYVyUkIafsa2iniphoLAbN6OU75c6tN0SYLjEJv6Tej0cktqpANhfp3VJCjUcSSZGPo/mtVR8=
       on:
         tags: true
     if: tag IS present
