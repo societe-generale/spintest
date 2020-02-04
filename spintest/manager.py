@@ -201,10 +201,12 @@ class TaskManager(object):
                 reports_per_url[url] = []
             reports_per_url[url].append(result)
 
-        all_reports = [{"url": url, "reports": reports} for url, reports in reports_per_url.items()]
+        all_reports = [
+            {"url": url, "reports": reports} for url, reports in reports_per_url.items()
+        ]
 
-        if self.generate_report is True:
-            with open("some_file_report.json", "w") as file:
+        if self.generate_report is not None:
+            with open(self.generate_report, "w") as file:
                 json.dump(all_reports, file)
 
         return all(
