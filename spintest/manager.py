@@ -2,6 +2,7 @@
 
 import asyncio
 import itertools
+import json
 
 from typing import Callable, Dict, List, Union
 
@@ -19,6 +20,7 @@ class TaskManager(object):
         token: Union[str, Callable[..., str]] = None,
         parallel: bool = False,
         verify: bool = True,
+        generate_report: bool = False,
     ):
         """Initialization of `TaskManager` class."""
         self.urls = urls
@@ -27,6 +29,7 @@ class TaskManager(object):
         self.token = token
         self.verify = verify
         self.parallel = parallel
+        self.generate_report = generate_report
 
         if self.parallel:
             self.outputs = [{"__token__": self.token}] * len(self.urls)
@@ -190,6 +193,19 @@ class TaskManager(object):
                 results.append(await self._next())
             except StopAsyncIteration:
                 break
+
+        reports_per_url = {}
+        for result in list(itertools.chain.from_iterable(results)):
+            url = result["url"]
+            if url not in reports_per_url:
+                reports_per_url[url] = []
+            reports_per_url[url].append(result)
+
+        all_reports = [{"url": url, "reports": reports} for url, reports in reports_per_url.items()]
+
+        if self.generate_report is True:
+            with open("some_file_report.json", "w") as file:
+                json.dump(all_reports, file)
 
         return all(
             [
