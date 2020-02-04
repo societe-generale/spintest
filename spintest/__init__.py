@@ -25,12 +25,16 @@ def spintest(
     token: str = None,
     parallel: bool = False,
     verify: bool = True,
-    generate_report: bool = True,
+    generate_report: str = None,
 ):
     """Programmatic wrapper for spintest."""
     loop = asyncio.new_event_loop()
     task_manager = TaskManager(
-        urls, tasks, token=token, parallel=parallel, verify=verify,
+        urls,
+        tasks,
+        token=token,
+        parallel=parallel,
+        verify=verify,
         generate_report=generate_report,
     )
     result = loop.run_until_complete(task_manager.run())
