@@ -1,5 +1,6 @@
 import asyncio
 import json
+import uuid
 import httpretty
 import pytest
 from spintest import logger, spintest, TaskManager
@@ -11,11 +12,49 @@ class FakeCreatedToken:
     """Function use to create token."""
 
     def __init__(self):
-        self.i = 0
+        self.call_count = 0
 
     def __call__(self):
-        self.i += 1
-        return str(self.i)
+        self.call_count += 1
+        return str(self.call_count)
+
+
+def test_task_with_token_token_is_not_visible_on_log():
+    """Test spintest with a strict match on custom body."""
+    TOKEN = str(uuid.uuid4())
+    httpretty.enable()
+
+    httpretty.register_uri(
+        httpretty.GET,
+        "http://test.com/test",
+        body=json.dumps({"a": "a", "b": "b", "c": "c"}),
+        status=200,
+    )
+
+    tasks = [
+        {
+            "method": "GET",
+            "route": "/test",
+            "expected": {
+                "code": 200,
+                "body": {"a": "a", "b": "b", "c": "c"},
+                "expected_match": "strict",
+            },
+        }
+    ]
+
+    loop = asyncio.get_event_loop()
+    results = []
+    manager = TaskManager(["http://test.com"], tasks, token=TOKEN)
+
+    for i in range(len(tasks)):
+        result = loop.run_until_complete(manager.next())
+        results.append(result)
+
+    assert TOKEN not in results[0]["task"]["headers"]["Authorization"]
+
+    httpretty.disable()
+    httpretty.reset()
 
 
 def test_task_with_fix_token_set_configuration():
@@ -100,7 +139,7 @@ def test_two_tokens_are_generated_with_one_task_with_two_retry():
         body=json.dumps({"status": "CREATING"}),
     )
     loop = asyncio.new_event_loop()
-    func = FakeCreatedToken()
+    token_func = FakeCreatedToken()
     manager = TaskManager(
         ["http://test.com"],
         [
@@ -111,11 +150,11 @@ def test_two_tokens_are_generated_with_one_task_with_two_retry():
                 "retry": 1,
             }
         ],
-        token=func,
+        token=token_func,
     )
     result = loop.run_until_complete(manager.next())
     assert "SUCCESS" == result["status"]
-    assert "Bearer 2" == result["task"]["headers"]["Authorization"]
+    assert token_func.call_count == 2
 
     httpretty.disable()
     httpretty.reset()
@@ -131,18 +170,18 @@ def test_task_with_ayncio_loop_and_fuct_token_set_configuration():
         status=200,
     )
     loop = asyncio.new_event_loop()
-    func = FakeCreatedToken()
+    token_func = FakeCreatedToken()
     manager = TaskManager(
         ["http://test.com"],
         [{"method": "GET", "route": "/test"}, {"method": "GET", "route": "/test"}],
-        token=func,
+        token=token_func,
     )
     result = loop.run_until_complete(manager.next())
     assert "SUCCESS" == result["status"]
-    assert "Bearer 1" == result["task"]["headers"]["Authorization"]
+    assert token_func.call_count == 1
     result1 = loop.run_until_complete(manager.next())
     assert "SUCCESS" == result1["status"]
-    assert "Bearer 2" == result1["task"]["headers"]["Authorization"]
+    assert token_func.call_count == 2
 
     httpretty.disable()
     httpretty.reset()
@@ -899,12 +938,8 @@ def test_task_next():
 def test_task_next_async():
     """Test spintest accessing with next asynchronously."""
     httpretty.enable()
-    httpretty.register_uri(
-        httpretty.GET, "http://foo.com/test"
-    )
-    httpretty.register_uri(
-        httpretty.GET, "http://bar.com/test"
-    )
+    httpretty.register_uri(httpretty.GET, "http://foo.com/test")
+    httpretty.register_uri(httpretty.GET, "http://bar.com/test")
 
     loop = asyncio.new_event_loop()
     manager = TaskManager(
@@ -927,12 +962,8 @@ def test_task_next_async():
 def test_task_next_async_failed():
     """Test spintest accessing with next asynchronously."""
     httpretty.enable()
-    httpretty.register_uri(
-        httpretty.GET, "http://foo.com/test"
-    )
-    httpretty.register_uri(
-        httpretty.GET, "http://bar.com/test", status=500
-    )
+    httpretty.register_uri(httpretty.GET, "http://foo.com/test")
+    httpretty.register_uri(httpretty.GET, "http://bar.com/test", status=500)
 
     loop = asyncio.new_event_loop()
     manager = TaskManager(

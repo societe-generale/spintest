@@ -40,6 +40,8 @@ class Task(object):
             "task": self.task,
             "ignore": self.task.get("ignore", False),
         }
+        if "headers" in self.task and "Authorization" in self.task["headers"]:
+            self.task["headers"]["Authorization"] = "****"
 
         log_level = {"SUCCESS": logger.info, "FAILED": logger.error}
         log_level.get(status, logger.critical)(json.dumps(result, indent=4))

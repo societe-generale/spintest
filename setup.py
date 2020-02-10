@@ -12,7 +12,7 @@ def parse_requirements(requirements_file):
 setup(
     name="spintest",
     version="0.1.1.dev1",
-    license='BSD-3-Clause',
+    license="BSD-3-Clause",
     author="Matthieu Gouel",
     author_email="matthieu.gouel@gmail.com",
     url="https://github.com/societe-generale/spintest",
@@ -30,5 +30,5 @@ setup(
     ],
     include_package_data=True,
     packages=find_packages(),
-    install_requires=parse_requirements('requirements.txt'),
+    install_requires=parse_requirements("requirements.txt"),
 )
