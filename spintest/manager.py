@@ -45,7 +45,6 @@ class TaskManager(object):
             logger.critical(critical)
         return [{"status": "FAILED", "ignore": False}]
 
-
     def validate_refs(self) -> bool:
         """Validate the integrity of task references."""
         task_names = [task["name"] for task in self.tasks if task.get("name")]
@@ -227,5 +226,6 @@ class TaskManager(object):
     def delete_token(self) -> List:
         for items in range(len(self.all_reports)):
             for element in range(len(self.all_reports[items]["reports"])):
-                self.all_reports[items]["reports"][element]["output"]['__token__'] = "***"
-
+                self.all_reports[items]["reports"][element]["output"][
+                    "__token__"
+                ] = "***"
