@@ -45,6 +45,7 @@ class TaskManager(object):
             logger.critical(critical)
         return [{"status": "FAILED", "ignore": False}]
 
+
     def validate_refs(self) -> bool:
         """Validate the integrity of task references."""
         task_names = [task["name"] for task in self.tasks if task.get("name")]
@@ -100,6 +101,9 @@ class TaskManager(object):
 
     async def _executor(self) -> list:
         """Private task executor."""
+        report = []
+        for iterator in range(len(self.urls)):
+            report.append({self.urls[iterator]})
         is_refs_validated = self.validate_refs()
         if not is_refs_validated:
             yield self._error(critical="Rollback scenario validation failed.")
@@ -196,18 +200,21 @@ class TaskManager(object):
 
         reports_per_url = {}
         for result in list(itertools.chain.from_iterable(results)):
-            url = result["url"]
-            if url not in reports_per_url:
-                reports_per_url[url] = []
-            reports_per_url[url].append(result)
+            if "url" in result.keys():
+                url = result["url"]
+                if url not in reports_per_url:
+                    reports_per_url[url] = []
+                reports_per_url[url].append(result)
 
-        all_reports = [
-            {"url": url, "reports": reports} for url, reports in reports_per_url.items()
-        ]
+            self.all_reports = [
+                {"url": url, "reports": reports}
+                for url, reports in reports_per_url.items()
+            ]
+            self.delete_token()
 
         if self.generate_report is not None:
             with open(self.generate_report, "w") as file:
-                json.dump(all_reports, file)
+                json.dump(self.all_reports, file)
 
         return all(
             [
@@ -216,3 +223,9 @@ class TaskManager(object):
                 if result["ignore"] is False
             ]
         )
+
+    def delete_token(self) -> List:
+        for items in range(len(self.all_reports)):
+            for element in range(len(self.all_reports[items]["reports"])):
+                self.all_reports[items]["reports"][element]["output"]['__token__'] = "***"
+
