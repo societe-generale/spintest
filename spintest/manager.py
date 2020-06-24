@@ -4,7 +4,7 @@ import asyncio
 import itertools
 import json
 
-from typing import Callable, Dict, List, Union
+from typing import Callable, Dict, List, Union, Optional
 
 from spintest import logger
 from spintest.task import Task
@@ -20,7 +20,7 @@ class TaskManager(object):
         token: Union[str, Callable[..., str]] = None,
         parallel: bool = False,
         verify: bool = True,
-        generate_report: bool = False,
+        generate_report: Optional[str] = None,
     ):
         """Initialization of `TaskManager` class."""
         self.urls = urls
@@ -100,9 +100,6 @@ class TaskManager(object):
 
     async def _executor(self) -> list:
         """Private task executor."""
-        report = []
-        for iterator in range(len(self.urls)):
-            report.append({self.urls[iterator]})
         is_refs_validated = self.validate_refs()
         if not is_refs_validated:
             yield self._error(critical="Rollback scenario validation failed.")
@@ -199,7 +196,7 @@ class TaskManager(object):
 
         reports_per_url = {}
         for result in list(itertools.chain.from_iterable(results)):
-            if "url" in result.keys():
+            if "url" in result:
                 url = result["url"]
                 if url not in reports_per_url:
                     reports_per_url[url] = []
@@ -218,7 +215,7 @@ class TaskManager(object):
         self.delete_token()
 
         if self.generate_report is not None:
-            with open(self.generate_report, "w") as file:
+            with open(self.generate_report, "w", encoding="utf-8") as file:
                 json.dump(self.all_reports, file)
 
         return all(
@@ -230,8 +227,6 @@ class TaskManager(object):
         )
 
     def delete_token(self) -> List:
-        for items in range(len(self.all_reports)):
-            for element in range(len(self.all_reports[items]["reports"])):
-                self.all_reports[items]["reports"][element]["output"][
-                    "__token__"  # nosec
-                ] = "***"
+        for suite_report in self.all_reports:
+            for task_report in suite_report["reports"]:
+                task_report["output"]["__token__"] = "***"  # nosec
