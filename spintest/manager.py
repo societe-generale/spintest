@@ -233,5 +233,5 @@ class TaskManager(object):
         for items in range(len(self.all_reports)):
             for element in range(len(self.all_reports[items]["reports"])):
                 self.all_reports[items]["reports"][element]["output"][
-                    "__token__"
+                    "__token__"  # nosec
                 ] = "***"

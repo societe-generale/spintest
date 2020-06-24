@@ -34,7 +34,8 @@ def validate_report(report_path):
             return False
         for task_report in suite_report["reports"]:
             output = task_report["output"]
-            if "__token__" in output and not all(char == "*" for char in output["__token__"]):
+            if "__token__" in output and not \
+                    all(char == "*" for char in output["__token__"]):
                 return False
 
     return True
@@ -125,14 +126,37 @@ def test_manager_reports_durations():
 
 
 @httpretty.activate
-def test_manager_reports_duration_including_delays_and_retries():
-    """Test spintest reports task & total durations, including delays & retries"""
+def test_manager_reports_duration_including_failure():
+    """Test spintest reports task & total durations, including failure"""
 
     httpretty.register_uri(
         httpretty.GET,
         "http://test.com/long_failed",
         body=httpretty_body_that_waits_and_returns(0.5, None)
     )
+
+    report_path = os.path.join(REPORT_DIR, "duration_report_with_failure.json")
+    spintest(
+        ["http://test.com"],
+        [
+            # Fails but does not retry and is ignored
+            {"method": "GET", "route": "/long_failed", "delay": 0, "ignore": True},
+        ],
+        generate_report=report_path,
+    )
+    spintest_reports = read_report(report_path)
+
+    first_task_report = spintest_reports[0]["reports"][0]
+    assert first_task_report["duration_sec"] == pytest.approx(0.5, abs=0.02)
+
+    total_duration = spintest_reports[0]["total_duration_sec"]
+    assert total_duration == pytest.approx(0.5, abs=0.02)
+
+
+@httpretty.activate
+def test_manager_reports_duration_including_delays_and_retries():
+    """Test spintest reports task & total durations, including delays & retries"""
+
     httpretty.register_uri(
         httpretty.GET,
         "http://test.com/long_500",
@@ -143,21 +167,45 @@ def test_manager_reports_duration_including_delays_and_retries():
     spintest(
         ["http://test.com"],
         [
-            # Fails but does not retry and is ignored
-            {"method": "GET", "route": "/long_failed", "delay": 0, "ignore": True},
             # Errors and retries once with 1sec delay
             {"method": "GET", "route": "/long_500", "retry": 1, "delay": 1},
         ],
         generate_report=report_path,
     )
     spintest_reports = read_report(report_path)
-    from pprint import pprint; pprint(spintest_reports)  # noqa: E702
 
     first_task_report = spintest_reports[0]["reports"][0]
-    assert first_task_report["duration_sec"] == pytest.approx(0.5, abs=0.02)
-
-    second_task_report = spintest_reports[0]["reports"][1]
-    assert second_task_report["duration_sec"] == pytest.approx(1.2, abs=0.02)
+    assert first_task_report["duration_sec"] == pytest.approx(1.2, abs=0.02)
 
     total_duration = spintest_reports[0]["total_duration_sec"]
-    assert total_duration == pytest.approx(1.7, abs=0.05)
+    assert total_duration == pytest.approx(1.2, abs=0.02)
+
+
+@httpretty.activate
+def test_manager_reports_total_duration():
+    """Test spintest reports proper total duration"""
+
+    httpretty.register_uri(
+        httpretty.GET,
+        "http://test.com/test_1",
+        body=httpretty_body_that_waits_and_returns(0.1, [200, {}, "Hello!"])
+    )
+    httpretty.register_uri(
+        httpretty.GET,
+        "http://test.com/test_2",
+        body=httpretty_body_that_waits_and_returns(0.4, [200, {}, "World!"])
+    )
+
+    report_path = os.path.join(REPORT_DIR, "duration_report_with_delay_and_retry.json")
+    spintest(
+        ["http://test.com"],
+        [
+            {"method": "GET", "route": "/test_1"},
+            {"method": "GET", "route": "/test_2"},
+        ],
+        generate_report=report_path,
+    )
+    spintest_reports = read_report(report_path)
+
+    total_duration = spintest_reports[0]["total_duration_sec"]
+    assert total_duration == pytest.approx(0.5, abs=0.04)
