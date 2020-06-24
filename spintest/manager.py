@@ -205,11 +205,17 @@ class TaskManager(object):
                     reports_per_url[url] = []
                 reports_per_url[url].append(result)
 
-            self.all_reports = [
-                {"url": url, "reports": reports}
-                for url, reports in reports_per_url.items()
-            ]
-            self.delete_token()
+        self.all_reports = [
+            {
+                "url": url,
+                "reports": reports,
+                "total_duration_sec": sum(
+                    task["duration_sec"] or 0 for task in reports
+                ),
+            }
+            for url, reports in reports_per_url.items()
+        ]
+        self.delete_token()
 
         if self.generate_report is not None:
             with open(self.generate_report, "w") as file:
