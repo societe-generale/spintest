@@ -3,6 +3,7 @@ import json
 import httpretty
 import pytest
 import shutil
+import time
 from spintest import logger, spintest
 from urllib.parse import urlparse
 
@@ -21,32 +22,28 @@ def create_delete_report_dir():
 
 def read_report(report_path):
     with open(report_path, "r") as f:
-        spintest_report = json.load(f)
+        return json.load(f)
 
-        result = []
-        for iteration in range(len(spintest_report)):
-            url = urlparse(spintest_report[iteration]["url"])
-            if url.scheme in ["http", "https"]:
-                result.append("True")
-            else:
-                result.append("False")
-            for number in range(len(spintest_report[iteration]["reports"])):
-                output = spintest_report[iteration]["reports"][number]["output"]
-                if "**" in output["__token__"]:
-                    result.append("True")
-                else:
-                    result.append("False")
 
-        if "False" in result:
+def validate_report(report_path):
+    spintest_reports = read_report(report_path)
+
+    for suite_report in spintest_reports:
+        url = urlparse(suite_report["url"])
+        if url.scheme not in ("http", "https"):
             return False
-        else:
-            return True
+        for task_report in suite_report["reports"]:
+            output = task_report["output"]
+            if "__token__" in output and not all(char == "*" for char in output["__token__"]):
+                return False
+
+    return True
 
 
+@httpretty.activate
 def test_manager_basic_generate_report():
     """Test spintest with generate report"""
     report_path = os.path.join(REPORT_DIR, "basic_report.json")
-    httpretty.enable()
     httpretty.register_uri(
         httpretty.GET, "http://test.com/test", body=json.dumps({"foo": "bar"})
     )
@@ -65,17 +62,14 @@ def test_manager_basic_generate_report():
 
     assert True is os.path.isfile(report_path)
 
-    assert True is read_report(report_path)
-
-    httpretty.disable()
-    httpretty.reset()
+    assert True is validate_report(report_path)
 
 
+@httpretty.activate
 def test_manager_basic_generate_report_with_token():
     """Test spintest with generate report"""
     report_path = os.path.join(REPORT_DIR, "basic_report_token.json")
     token = "ABC"
-    httpretty.enable()
     httpretty.register_uri(
         httpretty.GET, "http://test.com/test", body=json.dumps({"foo": "bar"})
     )
@@ -95,7 +89,75 @@ def test_manager_basic_generate_report_with_token():
 
     assert True is os.path.isfile(report_path)
 
-    assert True is read_report(report_path)
+    assert True is validate_report(report_path)
 
-    httpretty.disable()
-    httpretty.reset()
+
+def httpretty_body_that_waits_and_returns(duration, return_value):
+    def inner(_req, _uri, _headers):
+        time.sleep(duration)
+        return return_value
+    return inner
+
+
+@httpretty.activate
+def test_manager_reports_durations():
+    """Test spintest reports per-task & total duration"""
+
+    httpretty.register_uri(
+        httpretty.GET,
+        "http://test.com/test",
+        body=httpretty_body_that_waits_and_returns(0.1, [200, {}, "Hello!"])
+    )
+
+    report_path = os.path.join(REPORT_DIR, "duration_report.json")
+    spintest(
+        ["http://test.com"],
+        [{"method": "GET", "route": "/test"}] * 2,
+        generate_report=report_path,
+    )
+    spintest_reports = read_report(report_path)
+
+    first_task_report = spintest_reports[0]["reports"][0]
+    assert first_task_report["duration_sec"] == pytest.approx(0.1, abs=0.02)
+
+    total_duration = spintest_reports[0]["total_duration_sec"]
+    assert total_duration == pytest.approx(0.2, abs=0.02)
+
+
+@httpretty.activate
+def test_manager_reports_duration_including_delays_and_retries():
+    """Test spintest reports task & total durations, including delays & retries"""
+
+    httpretty.register_uri(
+        httpretty.GET,
+        "http://test.com/long_failed",
+        body=httpretty_body_that_waits_and_returns(0.5, None)
+    )
+    httpretty.register_uri(
+        httpretty.GET,
+        "http://test.com/long_500",
+        body=httpretty_body_that_waits_and_returns(0.1, [500, {}, "Hello!"])
+    )
+
+    report_path = os.path.join(REPORT_DIR, "duration_report_with_delay_and_retry.json")
+    spintest(
+        ["http://test.com"],
+        [
+            # Fails but does not retry and is ignored
+            {"method": "GET", "route": "/long_failed", "delay": 0, "ignore": True},
+            # Errors and retries once with 1sec delay
+            {"method": "GET", "route": "/long_500", "retry": 1, "delay": 1},
+        ],
+        generate_report=report_path,
+    )
+    spintest_reports = read_report(report_path)
+    from pprint import pprint; pprint(spintest_reports)  # noqa: E702
+
+    first_task_report = spintest_reports[0]["reports"][0]
+    assert first_task_report["duration_sec"] == pytest.approx(0.5, abs=0.02)
+
+    second_task_report = spintest_reports[0]["reports"][1]
+    assert second_task_report["duration_sec"] == pytest.approx(1.2, abs=0.02)
+
+    total_duration = spintest_reports[0]["total_duration_sec"]
+    assert total_duration == pytest.approx(1.7, abs=0.05)

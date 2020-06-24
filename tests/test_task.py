@@ -917,6 +917,8 @@ def test_task_next():
     assert {"foo": "bar"} == result["body"]
     assert "http://test.com" == result["url"]
     assert "/test" == result["route"]
+    # Because comparing floats is hard and is not the goal of this test
+    result["task"]["duration_sec"] = 42.0
     assert {
         "method": "GET",
         "route": "/test",
@@ -924,6 +926,7 @@ def test_task_next():
         "retry": 0,
         "delay": 1,
         "ignore": False,
+        "duration_sec": 42.0,
     } == result["task"]
 
     assert {"__token__": None} == result["output"]
