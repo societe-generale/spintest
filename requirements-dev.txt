@@ -5,6 +5,6 @@ pytest-cov
 bumpversion
 black
 doubles
-httpretty
+httpretty==0.9.7
 coveralls
 -r requirements.txt
