@@ -5,6 +5,7 @@ stages:
 - Quality
 - Publish
 install:
+- pip install pytest --upgrade
 - make install-dev
 jobs:
   include:
