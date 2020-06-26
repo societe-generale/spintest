@@ -216,7 +216,7 @@ class TaskManager(object):
 
         if self.generate_report is not None:
             with open(self.generate_report, "w", encoding="utf-8") as file:
-                json.dump(self.all_reports, file)
+                json.dump(self.all_reports, file, ensure_ascii=False)
 
         return all(
             [
