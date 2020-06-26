@@ -198,9 +198,9 @@ class Task(object):
                         verify=self.verify,
                     ),
                 )
-                self.task["duration_sec"] = time.monotonic() - start_time
+                self.task["duration_sec"] = round(time.monotonic() - start_time, 2)
             except requests.exceptions.RequestException:
-                self.task["duration_sec"] = time.monotonic() - start_time
+                self.task["duration_sec"] = round(time.monotonic() - start_time, 2)
                 failed_response = self._response("FAILED", "Request failed.")
                 await asyncio.sleep(self.task["delay"])
                 continue
