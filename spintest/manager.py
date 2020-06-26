@@ -45,7 +45,6 @@ class TaskManager(object):
             logger.critical(critical)
         return [{"status": "FAILED", "ignore": False}]
 
-
     def validate_refs(self) -> bool:
         """Validate the integrity of task references."""
         task_names = [task["name"] for task in self.tasks if task.get("name")]
