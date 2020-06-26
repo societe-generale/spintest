@@ -212,7 +212,7 @@ class TaskManager(object):
             }
             for url, reports in reports_per_url.items()
         ]
-        self.delete_token()
+        self._hide_token_from_all_reports(self.all_reports)
 
         if self.generate_report is not None:
             with open(self.generate_report, "w", encoding="utf-8") as file:
@@ -226,7 +226,8 @@ class TaskManager(object):
             ]
         )
 
-    def delete_token(self) -> List:
-        for suite_report in self.all_reports:
+    @staticmethod
+    def _hide_token_from_all_reports(all_reports) -> List:
+        for suite_report in all_reports:
             for task_report in suite_report["reports"]:
                 task_report["output"]["__token__"] = "***"  # nosec
