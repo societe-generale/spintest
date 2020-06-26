@@ -4,7 +4,7 @@ import asyncio
 import colorlog
 import logging
 
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 
 handler = colorlog.StreamHandler()
@@ -25,7 +25,7 @@ def spintest(
     token: str = None,
     parallel: bool = False,
     verify: bool = True,
-    generate_report: str = None,
+    generate_report: Optional[str] = None,
 ):
     """Programmatic wrapper for spintest."""
     loop = asyncio.new_event_loop()
