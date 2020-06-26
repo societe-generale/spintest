@@ -1,7 +1,10 @@
 # Changelog
 
+## v0.3.0 (2020/06/26)
+* Add capability to generate spintest report, this report contains all needed information about your tested API routes ([#8](https://github.com/societe-generale/spintest/pull/8))
+
 ## v0.2.1 (2020/06/26)
-* Fix version httpretty to 0.9.7 to fix tests execution ([#9](https://github.com/societe-generale/spintest/pull/9)
+* Fix version httpretty to 0.9.7 to fix tests execution ([#9](https://github.com/societe-generale/spintest/pull/9))
 * Set environment proxy to '', to avoid error when tests execution
 
 
