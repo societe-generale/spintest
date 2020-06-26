@@ -227,7 +227,7 @@ class TaskManager(object):
         )
 
     @staticmethod
-    def _hide_token_from_all_reports(all_reports) -> List:
+    def _hide_token_from_all_reports(all_reports):
         for suite_report in all_reports:
             for task_report in suite_report["reports"]:
                 task_report["output"]["__token__"] = "***"  # nosec
