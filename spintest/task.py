@@ -32,6 +32,7 @@ class Task(object):
             "name": self.task.get("name"),
             "status": status,
             "timestamp": time.asctime(),
+            "duration_sec": self.task.get("duration_sec", None),
             "url": self.url,
             "route": self.task.get("route", "/"),
             "message": message,
@@ -180,6 +181,7 @@ class Task(object):
 
         loop = asyncio.get_event_loop()
 
+        start_time = time.monotonic()
         for _ in range(self.task["retry"] + 1):
             try:
                 if self.output.get("__token__"):
@@ -196,7 +198,9 @@ class Task(object):
                         verify=self.verify,
                     ),
                 )
+                self.task["duration_sec"] = round(time.monotonic() - start_time, 2)
             except requests.exceptions.RequestException:
+                self.task["duration_sec"] = round(time.monotonic() - start_time, 2)
                 failed_response = self._response("FAILED", "Request failed.")
                 await asyncio.sleep(self.task["delay"])
                 continue
