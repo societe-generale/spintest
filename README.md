@@ -297,3 +297,34 @@ tasks = [
 
 spintest(urls, tasks, token=token_write)
 ```
+
+### Generate report
+
+Since the version 0.3.0 of spintest, you have the possibility to generate reports of your test execution.
+
+This report will contain all information that you written [See this paragraph](https://github.com/societe-generale/spintest#urls-and-tasks-definition), and on each tasks you will find the return payload and the execution time.
+Finally, at the end you will find the total execution time of your test execution. 
+
+To use this fonctionality please use this piece of code : 
+
+```
+from spintest import spintest
+
+urls = ["https://test.com"]
+tasks = [
+    {
+        "method": "GET",
+        "route": "test",
+    }
+]
+
+result = spintest(urls, tasks, generate_report="report_name")
+assert True is result
+```
+
+Report with the name "report_name" will be create.
+
+to avoid to create multiple "report_name", this report will be overwrite on each test execution.
+
+
+
