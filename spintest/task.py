@@ -76,10 +76,7 @@ class Task(object):
         if not (expected_code or 200 <= response_code < 300):
             return self._response("FAILED", "Invalid default HTTP status code (2XX).")
 
-    def _expected_match(self):
-        return self.task.get("expected", {}).get("expected_match", "strict")
-
-    def _compare_body(self, body, expected):
+    def _compare_body(self, body, expected, mode):
         """Recursive comparison of body.
         if expected value is None, any body is accepted.
         if expected value is set, and expect_match value is not set,
@@ -95,30 +92,30 @@ class Task(object):
             return False
 
         if isinstance(body, dict):
-            if self._expected_match() == "strict" and body.keys() != expected.keys():
+            if mode == "strict" and body.keys() != expected.keys():
                 return False
 
             if not set(expected).issubset(body):
                 return False
 
-            return all(
-                [self._compare_body(body[ek], expected[ek]) for ek in expected.keys()]
-            )
+            return all([
+                self._compare_body(body[ek], expected[ek], mode) for ek in expected.keys()
+            ])
 
         elif isinstance(body, list):
-            if self._expected_match() == "strict":
+            if mode == "strict":
                 if len(body) != len(expected):
                     return False
                 for body_item in body:
                     for expected_item in expected:
-                        if self._compare_body(body_item, expected_item):
+                        if self._compare_body(body_item, expected_item, mode):
                             break
                     else:
                         return False
             else:
                 for expected_item in expected:
                     for body_item in body:
-                        if self._compare_body(body_item, expected_item):
+                        if self._compare_body(body_item, expected_item, mode):
                             break
                     else:
                         return False
@@ -133,10 +130,22 @@ class Task(object):
         """Validate the returned body."""
         expected_body = self.task.get("expected", {}).get("body")
         response_body = self._response_body()
-        if expected_body and not self._compare_body(response_body, expected_body):
+        mode = self.task.get("expected", {}).get("expected_match", "strict")
+        if expected_body and not self._compare_body(response_body, expected_body, mode):
             return self._response(
                 "FAILED",
                 "The response body does not correspond with the expected body.",
+            )
+
+    def should_be_raised(self):
+        """Should raise immediately."""
+        expected_body = self.task.get("raise", {}).get("body")
+        response_body = self._response_body()
+        mode = self.task.get("expected", {}).get("expected", "strict")
+        if expected_body and self._compare_body(response_body, expected_body, mode):
+            return self._response(
+                "FAILED",
+                "The response body correspond with the raise body.",
             )
 
     async def run(self) -> dict:
@@ -211,6 +220,10 @@ class Task(object):
             if failed_response is not None:
                 await asyncio.sleep(self.task["delay"])
                 continue
+
+            failed_response = self.should_be_raised()
+            if failed_response is not None:
+                return failed_response
 
             failed_response = self.validate_body()
             if failed_response is not None:

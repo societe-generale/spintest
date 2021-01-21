@@ -49,6 +49,11 @@ A single task follow this schema :
         Optional("body"): Or(dict, str),
         Optional("expected_match", default="strict"): Or("partial", "strict"),
     },
+    Optional("raise"): {
+        Optional("code"): int,
+        Optional("body"): Or(dict, str),
+        Optional("expected_match", default="strict"): Or("partial", "strict"),
+    },
     Optional("retry", default=0): int,
     Optional("delay", default=1): int,
     Optional("ignore", default=False): bool,
@@ -66,6 +71,10 @@ A single task follow this schema :
     - **code** (optional) is the expected HTTP code.
     - **body** (optional) is an expected response body. You can put a value to *null* if you don't want to check the value of a key but you will have to set all keys. It also checks nested list and dictionary unless you put "null" instead.
     - **expected_match** is an option to check partially the keys present on your response body. By default it is set to strict.
+- **raise** (optional) is an error HTTP response code or response body. Once this error occurs, the test fails without retries.
+    - **code** (optional) is the expected HTTP code.
+    - **body** (optional) is an expected response body. You can put a value to *null* if you don't want to check the value of a key but you will have to set all keys. It also checks nested list and dictionary unless you put "null" instead.
+    - **match** is an option to check partially the keys present on your response body. By default it is set to strict.
 - **retry** (optional) is the number of retries if it fails (default is 0).
 - **delay** (optional) is the time in second to wait between retries (default is 1).
 - **ignore** (optional) is if you want to continue the scenario in case of error of this task.
@@ -328,6 +337,9 @@ to avoid to create multiple "report_name", this report will be overwrite on each
 
 ### Raise to avoid long test execution
 
+The test no longer retries and fails immediately once the "raise" definition is met.
+
+
 ```
 from spintest import spintest
 urls = ["https://test.com"]
@@ -339,11 +351,12 @@ tasks = [
         "expected": {
             "body": {"result": "Success"},
             "expected_match": "partial",
-        }
+        },
         "raise": {
             "body": {"result": "Failed"},
-            "expected_match": "partial",
-        }
+            "match": "partial",
+        },
+        "retry": 15,
     }
 ]
 
