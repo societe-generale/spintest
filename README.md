@@ -326,5 +326,28 @@ Report with the name "report_name" will be create.
 
 to avoid to create multiple "report_name", this report will be overwrite on each test execution.
 
+### Raise to avoid long test execution
 
+```
+from spintest import spintest
+urls = ["https://test.com"]
+
+tasks = [
+    {
+        "method": "GET",
+        "route": "test",
+        "expected": {
+            "body": {"result": "Success"},
+            "expected_match": "partial",
+        }
+        "raise": {
+            "body": {"result": "Failed"},
+            "expected_match": "partial",
+        }
+    }
+]
+
+result = spintest(urls, tasks, generate_report="report_name")
+assert True is result
+```
 
