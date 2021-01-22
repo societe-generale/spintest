@@ -99,7 +99,8 @@ class Task(object):
                 return False
 
             return all([
-                self._compare_body(body[ek], expected[ek], mode) for ek in expected.keys()
+                self._compare_body(body[ek], expected[ek], mode)
+                for ek in expected.keys()
             ])
 
         elif isinstance(body, list):
