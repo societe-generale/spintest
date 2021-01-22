@@ -52,7 +52,7 @@ A single task follow this schema :
     Optional("raise"): {
         Optional("code"): int,
         Optional("body"): Or(dict, str),
-        Optional("expected_match", default="strict"): Or("partial", "strict"),
+        Optional("match", default="strict"): Or("partial", "strict"),
     },
     Optional("retry", default=0): int,
     Optional("delay", default=1): int,
