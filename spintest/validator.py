@@ -21,11 +21,11 @@ TASK_SCHEMA = Schema(
             Optional("body"): Or(dict, str),
             Optional("expected_match", default="strict"): Or("partial", "strict"),
         },
-        Optional("raise"): {
+        Optional("fail_on"): [{
             Optional("code"): int,
             Optional("body"): Or(dict, str),
-            Optional("match", default="strict"): Or("partial", "strict"),
-        },
+            Optional("expected_match", default="strict"): Or("partial", "strict"),
+        }],
         Optional("retry", default=0): int,
         Optional("delay", default=1): int,
         Optional("ignore", default=False): bool,

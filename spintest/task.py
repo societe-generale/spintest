@@ -138,16 +138,26 @@ class Task(object):
                 "The response body does not correspond with the expected body.",
             )
 
-    def should_be_raised(self):
-        """Should raise immediately."""
-        expected_body = self.task.get("raise", {}).get("body")
-        response_body = self._response_body()
-        mode = self.task.get("expected", {}).get("expected", "strict")
-        if expected_body and self._compare_body(response_body, expected_body, mode):
-            return self._response(
-                "FAILED",
-                "The response body correspond with the raise body.",
-            )
+    def validate_fail_on_code(self):
+        """Verify the returned status code is not in fail_on definition."""
+        fail_on_list = self.task.get("fail_on", [])
+        for fail_on in fail_on_list:
+            code = fail_on.get("code")
+            if code and code == self._response_code():
+                return self._response("FAILED", "HTTP status code correspond with the fail_on code.")
+
+    def validate_fail_on_body(self):
+        """Verify if the response body is not in the fail_on definition."""
+        fail_on_list = self.task.get("fail_on", [])
+        for fail_on in fail_on_list:
+            body = fail_on.get("body")
+            mode = fail_on.get("expected_match", "strict")
+            response_body = self._response_body()
+            if body and self._compare_body(response_body, body, mode):
+                return self._response(
+                    "FAILED",
+                    "The response body correspond with the fail_on body.",
+                )
 
     async def run(self) -> dict:
         """Run the task on a specified URL."""
@@ -217,12 +227,16 @@ class Task(object):
 
             # -- Output validation --
 
+            failed_response = self.validate_fail_on_code()
+            if failed_response is not None:
+                return failed_response
+
             failed_response = self.validate_code()
             if failed_response is not None:
                 await asyncio.sleep(self.task["delay"])
                 continue
 
-            failed_response = self.should_be_raised()
+            failed_response = self.validate_fail_on_body()
             if failed_response is not None:
                 return failed_response
 
