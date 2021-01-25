@@ -47,7 +47,7 @@ def test_task_schema_with_optional_key_raise_and_match_accepted(match_mode):
     right_input = {
         "method": "string",
         "route": "string",
-        "expected": {"expected_match": match_mode},
+        "raise": {"match": match_mode},
     }
 
     assert input_validator(right_input, TASK_SCHEMA)

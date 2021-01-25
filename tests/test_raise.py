@@ -43,5 +43,5 @@ def test_raise_return_failure_response_immediately():
     loop = asyncio.new_event_loop()
     result = loop.run_until_complete(manager.next())
     assert 2 == len(httpretty.latest_requests()), \
-        "Should calling 2 times instead of 3 (first call + 2 retries)"
+        "Should call 2 times instead of 3 (first call + 2 retries)"
     assert "FAILED" == result["status"]
