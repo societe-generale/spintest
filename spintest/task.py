@@ -76,10 +76,7 @@ class Task(object):
         if not (expected_code or 200 <= response_code < 300):
             return self._response("FAILED", "Invalid default HTTP status code (2XX).")
 
-    def _expected_match(self):
-        return self.task.get("expected", {}).get("expected_match", "strict")
-
-    def _compare_body(self, body, expected):
+    def _compare_body(self, body, expected, match_mode):
         """Recursive comparison of body.
         if expected value is None, any body is accepted.
         if expected value is set, and expect_match value is not set,
@@ -95,30 +92,31 @@ class Task(object):
             return False
 
         if isinstance(body, dict):
-            if self._expected_match() == "strict" and body.keys() != expected.keys():
+            if match_mode == "strict" and body.keys() != expected.keys():
                 return False
 
             if not set(expected).issubset(body):
                 return False
 
-            return all(
-                [self._compare_body(body[ek], expected[ek]) for ek in expected.keys()]
-            )
+            return all([
+                self._compare_body(body[ek], expected[ek], match_mode)
+                for ek in expected.keys()
+            ])
 
         elif isinstance(body, list):
-            if self._expected_match() == "strict":
+            if match_mode == "strict":
                 if len(body) != len(expected):
                     return False
                 for body_item in body:
                     for expected_item in expected:
-                        if self._compare_body(body_item, expected_item):
+                        if self._compare_body(body_item, expected_item, match_mode):
                             break
                     else:
                         return False
             else:
                 for expected_item in expected:
                     for body_item in body:
-                        if self._compare_body(body_item, expected_item):
+                        if self._compare_body(body_item, expected_item, match_mode):
                             break
                     else:
                         return False
@@ -133,11 +131,38 @@ class Task(object):
         """Validate the returned body."""
         expected_body = self.task.get("expected", {}).get("body")
         response_body = self._response_body()
-        if expected_body and not self._compare_body(response_body, expected_body):
+        match_mode = self.task.get("expected", {}).get("expected_match", "strict")
+        if expected_body and not self._compare_body(
+            response_body, expected_body, match_mode
+        ):
             return self._response(
                 "FAILED",
                 "The response body does not correspond with the expected body.",
             )
+
+    def validate_fail_on_code(self):
+        """Verify the returned status code is not in fail_on definition."""
+        fail_on_list = self.task.get("fail_on", [])
+        for fail_on in fail_on_list:
+            code = fail_on.get("code")
+            if code and code == self._response_code():
+                return self._response(
+                    "FAILED",
+                    "HTTP status code correspond with the fail_on code."
+                )
+
+    def validate_fail_on_body(self):
+        """Verify if the response body is not in the fail_on definition."""
+        fail_on_list = self.task.get("fail_on", [])
+        for fail_on in fail_on_list:
+            body = fail_on.get("body")
+            match_mode = fail_on.get("expected_match", "strict")
+            response_body = self._response_body()
+            if body and self._compare_body(response_body, body, match_mode):
+                return self._response(
+                    "FAILED",
+                    "The response body correspond with the fail_on body.",
+                )
 
     async def run(self) -> dict:
         """Run the task on a specified URL."""
@@ -207,10 +232,18 @@ class Task(object):
 
             # -- Output validation --
 
+            failed_response = self.validate_fail_on_code()
+            if failed_response is not None:
+                return failed_response
+
             failed_response = self.validate_code()
             if failed_response is not None:
                 await asyncio.sleep(self.task["delay"])
                 continue
+
+            failed_response = self.validate_fail_on_body()
+            if failed_response is not None:
+                return failed_response
 
             failed_response = self.validate_body()
             if failed_response is not None:

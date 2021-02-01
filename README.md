@@ -49,6 +49,11 @@ A single task follow this schema :
         Optional("body"): Or(dict, str),
         Optional("expected_match", default="strict"): Or("partial", "strict"),
     },
+    Optional("fail_on"): [{
+        Optional("code"): int,
+        Optional("body"): Or(dict, str),
+        Optional("expected_match", default="strict"): Or("partial", "strict"),
+    }],
     Optional("retry", default=0): int,
     Optional("delay", default=1): int,
     Optional("ignore", default=False): bool,
@@ -63,6 +68,10 @@ A single task follow this schema :
 - **header** (optional) is a dictionary of headers. Default is JSON application headers. For Oauth endpoint you don't need to add the appropriate header with the token (if you specify the token).
 - **output** (optional) Variable definition where Spintest put the result of the call. This result can be used later in an other task using Jinja syntax.
 - **expected** (optional) is an expected HTTP response code or response body.
+    - **code** (optional) is the expected HTTP code.
+    - **body** (optional) is an expected response body. You can put a value to *null* if you don't want to check the value of a key but you will have to set all keys. It also checks nested list and dictionary unless you put "null" instead.
+    - **expected_match** is an option to check partially the keys present on your response body. By default it is set to strict.
+- **fail_on** (optional) is a list of error HTTP response code or response body. Once one of these error occurs, the test fails without retries.
     - **code** (optional) is the expected HTTP code.
     - **body** (optional) is an expected response body. You can put a value to *null* if you don't want to check the value of a key but you will have to set all keys. It also checks nested list and dictionary unless you put "null" instead.
     - **expected_match** is an option to check partially the keys present on your response body. By default it is set to strict.
@@ -326,5 +335,41 @@ Report with the name "report_name" will be create.
 
 to avoid to create multiple "report_name", this report will be overwrite on each test execution.
 
+### Raise to avoid long test execution
 
+The test no longer retries and fails immediately once one of the "fail_on" definition is met.
+
+
+```
+from spintest import spintest
+urls = ["https://test.com"]
+
+tasks = [
+    {
+        "method": "GET",
+        "route": "test",
+        "expected": {
+            "body": {"result": "Success"},
+            "expected_match": "partial",
+        },
+        "fail_on": [
+            {
+                "code": 409,
+            },
+            {
+                "body": {"result": "Failed"},
+                "match": "partial",
+            },
+            {
+                "body": {"result": "Error"},
+                "match": "partial",
+            },
+        ],
+        "retry": 15,
+    }
+]
+
+result = spintest(urls, tasks, generate_report="report_name")
+assert True is result
+```
 
