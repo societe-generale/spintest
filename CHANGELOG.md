@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.4.0 (2021/02/01)
+* Add capabilty to stop test execution if some elements are present on "fail_on" definition ([#11](https://github.com/societe-generale/spintest/pull/11))
+
 ## v0.3.0 (2020/06/26)
 * Add capability to generate spintest report, this report contains all needed information about your tested API routes ([#8](https://github.com/societe-generale/spintest/pull/8))
 
