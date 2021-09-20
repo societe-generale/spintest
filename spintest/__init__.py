@@ -22,7 +22,7 @@ from spintest.manager import TaskManager  # noqa: E402
 def spintest(
     urls: List[str],
     tasks: List[Dict[str, str]],
-    token: Union[str, Callable[..., str]] = None,
+    token: Union[str, Callable[..., str], None] = None,
     parallel: bool = False,
     verify: bool = True,
     generate_report: Optional[str] = None,

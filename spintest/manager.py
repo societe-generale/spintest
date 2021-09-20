@@ -17,7 +17,7 @@ class TaskManager(object):
         self,
         urls: List[str],
         tasks: List[Dict[str, str]],
-        token: Union[str, Callable[..., str]] = None,
+        token: Union[str, Callable[..., str], None] = None,
         parallel: bool = False,
         verify: bool = True,
         generate_report: Optional[str] = None,
@@ -39,7 +39,7 @@ class TaskManager(object):
             self.stack = self._executor()
 
     @staticmethod
-    def _error(critical: str = None):
+    def _error(critical: Optional[str] = None):
         """Throw a custom error."""
         if critical:
             logger.critical(critical)
