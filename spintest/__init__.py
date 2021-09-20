@@ -4,7 +4,7 @@ import asyncio
 import colorlog
 import logging
 
-from typing import List, Dict, Optional
+from typing import Callable, Dict, List, Union, Optional
 
 
 handler = colorlog.StreamHandler()
@@ -22,7 +22,7 @@ from spintest.manager import TaskManager  # noqa: E402
 def spintest(
     urls: List[str],
     tasks: List[Dict[str, str]],
-    token: str = None,
+    token: Union[str, Callable[..., str], None] = None,
     parallel: bool = False,
     verify: bool = True,
     generate_report: Optional[str] = None,
