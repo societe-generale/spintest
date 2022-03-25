@@ -232,6 +232,10 @@ class Task(object):
 
             # -- Output validation --
 
+            output_variable = self.task.get("output")
+            if output_variable:
+                self.output[output_variable] = self._response_body()
+
             failed_response = self.validate_fail_on_code()
             if failed_response is not None:
                 return failed_response
@@ -249,10 +253,6 @@ class Task(object):
             if failed_response is not None:
                 await asyncio.sleep(self.task["delay"])
                 continue
-
-            output_variable = self.task.get("output")
-            if output_variable:
-                self.output[output_variable] = self._response_body()
 
             return self._response("SUCCESS", "OK.")
 
