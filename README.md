@@ -2,17 +2,15 @@
 
 Functional scenario interpreter.
 
-Spintest is a library that facilitates the integration and functional test of APIs. It takes a list of URLs in parameter and a list of tasks (also called scenario) that will be executed against the specified URLs.
+Spintest is a library that facilitates the integration and functional test of APIs. It takes as parameters a list of URLs and a list of tasks (also called scenarios) that will be executed against the specified URLs.
 
-Each task represents an API call and provides some options in order to validate or react to the response. Indeed, by default the task is in success if the HTTP code returned is between `200` and `299` included, but you can specify the error code or the body you expect. You can also provide a list of rollback tasks (or task references) that is executed if the task fails.
-
-Also, the response of the API call can be stored in order to be used in a future task.
-
-Finally, you can choose to run the task scenario concurrently on each URL.
+Each task represents an API call and provides some options in order to validate or react to the response. By default the task is a success if the HTTP code returned is `2XX` (200 to 299 included), but it is possible to specify the error code or the body that are expected. It is also possible to provide a list of rollback tasks (or task references) that are executed should the task fail.<br/>
+The response of the API calls can be stored in order to be used in a future task.
+The task scenarios can also be run concurrently in each URL.
 
 ## Installation
 
-You can install the package using PIP.
+The package can be installed using PIP.
 
 ```
 $ pip install spintest
@@ -20,7 +18,7 @@ $ pip install spintest
 
 ## URLs and tasks definition
 
-The url list is just a list of endpoints. A route added here will not be evaluated because the route definition is set on the task.
+The url list is a list of endpoints. A route added here will not be evaluated because the route definition is set on the task.
 
 ```
 [
@@ -29,9 +27,9 @@ The url list is just a list of endpoints. A route added here will not be evaluat
 ]
 ```
 
-The task definition is a little bit more complex. A scenario is a list of tasks possibly dependent to each other.
+The task definition is a little bit more detailled.<br />A scenario is a list of tasks possibly dependent to each other.
 
-A single task follow this schema :
+A single task follows the following schema :
 
 ```
 {
@@ -65,8 +63,8 @@ A single task follow this schema :
 - **route** (optional) is the route to test on the endpoint. It will be appended of the current URL (default is "/")
 - **name** (optional) is the name of the task. Mandatory if you want to use that task in a rollback.
 - **body** (optional) is a request body.
-- **header** (optional) is a dictionary of headers. Default is JSON application headers. For Oauth endpoint you don't need to add the appropriate header with the token (if you specify the token).
-- **output** (optional) Variable definition where Spintest put the result of the call. This result can be used later in an other task using Jinja syntax.
+- **header** (optional) is a dictionary of headers. Default is JSON application headers. For Oauth endpoint it is not necessary to add the appropriate header with the token (if the token is specified).
+- **output** (optional) Variable definition where Spintest puts the result of the call. This result can be used later in another task using Jinja syntax.
 - **expected** (optional) is an expected HTTP response code or response body.
     - **code** (optional) is the expected HTTP code.
     - **body** (optional) is an expected response body. You can put a value to *null* if you don't want to check the value of a key but you will have to set all keys. It also checks nested list and dictionary unless you put "null" instead.
