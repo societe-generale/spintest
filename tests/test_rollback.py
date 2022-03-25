@@ -41,20 +41,28 @@ def test_rollback_unkwnown_ref_parallel():
 def test_rollback_with_output_value():
     """Test spintest with unknown rollback reference."""
     httpretty.enable()
-    httpretty.register_uri(httpretty.POST, "http://test.com/test", status=201,body={"id": "1234-5678"})
-    httpretty.register_uri(httpretty.DELETE, "http://test.com/test", status=201)
+    httpretty.register_uri(
+        httpretty.GET, "http://test.com/test", status=201,
+        body='{"id": "1234-5678"}',
+    )
+    httpretty.register_uri(httpretty.DELETE, "http://test.com/test/1234-5678", status=201)
 
     result = spintest(
         ["http://test.com"],
         [
             {
-                "method": "POST",
+                "method": "GET",
                 "route": "/test",
                 "output": "test_output",
-                "expected": {"code": 201},
+                "expected": {"code": 400},
                 "rollback": ["test_rollback"],
             },
-            {"name" : "test_rollback", "method": "DELETE", "route": "/test/{{ test_output['id'] }}"},
+            {
+                "name": "test_rollback",
+                "method": "DELETE",
+                "route": "/test/{{ test_output['id'] }}",
+                "expected": {"code": 201}
+            },
         ],
     )
     httpretty.disable()
