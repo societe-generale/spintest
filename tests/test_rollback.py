@@ -68,7 +68,7 @@ def test_rollback_with_output_value():
     httpretty.disable()
     httpretty.reset()
 
-    assert result is True
+    assert result is False
 
 
 def test_rollback_invalid_schema():
