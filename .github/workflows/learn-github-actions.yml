@@ -1,13 +1,23 @@
 name: learn-github-actions
 on: [push]
 jobs:
-  check-python-version:
+  Build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.6.8", "3.7.0", "3.8.0", "3.9.0"]
     steps:
       - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
       - uses: actions/setup-python@v3
         with:
-          python-version: '3.7'
+          python-version: ${{ matrix.python-version }}
           architecture: 'x64'
-      - run: python --version
-      - run: pip install pytest --upgrade
+      - names: Install dependencies
+      - run: |
+        pip install pytest --upgrade
+        make install-dev
+      - names: Quality (with lint and bandit)
+      - run: make lint
+      - names: Run tests
+      - run: make test
