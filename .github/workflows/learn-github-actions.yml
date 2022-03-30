@@ -15,8 +15,8 @@ jobs:
           architecture: 'x64'
       - names: Install dependencies
       - run: |
-        pip install pytest --upgrade
-        make install-dev
+          pip install pytest --upgrade
+          make install-dev
       - names: Quality (with lint and bandit)
       - run: make lint
       - names: Run tests
