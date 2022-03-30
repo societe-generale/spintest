@@ -14,8 +14,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
           architecture: 'x64'
       - name: Install dependencies
-      - run: pip install pytest --upgrade
+        run: |
+          pip install pytest --upgrade
+          make install-dev
       - name: Quality (with lint and bandit)
-      - run: make lint
+        run: make lint
       - name: Run tests
-      - run: make test
+        run: make test
