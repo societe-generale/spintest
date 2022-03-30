@@ -9,15 +9,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-      - uses: actions/setup-python@v3
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
           architecture: 'x64'
-      - names: Install dependencies
+      - name: Install dependencies
       - run: |
           pip install pytest --upgrade
           make install-dev
-      - names: Quality (with lint and bandit)
+      - name: Quality (with lint and bandit)
       - run: make lint
-      - names: Run tests
+      - name: Run tests
       - run: make test
