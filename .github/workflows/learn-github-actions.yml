@@ -43,7 +43,7 @@ jobs:
           python setup.py bdist_wheel
       - name: Push to test pypi
         run: |
-          twine upload -repository-url https://test.pypi.org/legacy/ -u __token__ -p ${{ secrets.TEST_PYPI }} --cert /etc/ssl/certs/ca-bundle.trust.crt dist/*
+          twine upload -repository-url https://test.pypi.org/legacy/ -u __token__ -p ${{ secrets.TEST_PYPI }} dist/* --cert /etc/ssl/certs/ca-bundle.trust.crt
 
           # only upload if a tag is pushed (otherwise just build & check)
           # upload: ${{ github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags') && github.ref == 'refs/heads/master' }}
