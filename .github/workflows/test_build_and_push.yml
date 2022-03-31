@@ -42,4 +42,4 @@ jobs:
           python setup.py bdist_wheel
       - name: Push to test pypi
         run: |
-          twine upload --repository-url https://test.pypi.org/legacy/ --username __token__ --password ${{ secrets.PYPI_TOKEN }} dist/*
+          twine upload --repository-url https://upload.pypi.org/ --username __token__ --password ${{ secrets.PYPI_TOKEN }} dist/*
