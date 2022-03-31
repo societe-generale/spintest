@@ -34,9 +34,15 @@ jobs:
         with:
           python-version: '3.7' # Version range or exact version of a Python version to use, using SemVer's version range syntax
           architecture: 'x64'
-      - uses: casperdcl/deploy-pypi@v2
-        with:
-          password: ${{ secrets.PYPI_TOKEN }}
-          pip: --version
+      - name: Build spintest package
+        run : | 
+          python setup.py bdist_wheel
+      - name: Install twine
+        run: |
+          pip install twine
+      - name: Push to test pypi
+        run: |
+          twine upload -repository-url https://test.pypi.org/legacy/ -u __token__ -p ${{ secrets.TEST_PYPI }} --cert /etc/ssl/certs/ca-bundle.trust.crt dist/*
+
           # only upload if a tag is pushed (otherwise just build & check)
           # upload: ${{ github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags') && github.ref == 'refs/heads/master' }}
