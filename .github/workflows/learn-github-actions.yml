@@ -34,12 +34,13 @@ jobs:
         with:
           python-version: '3.7' # Version range or exact version of a Python version to use, using SemVer's version range syntax
           architecture: 'x64'
+      - name: Install needed package to push deploy
+        run: |
+          pip install wheel
+          pip install twine
       - name: Build spintest package
         run : | 
           python setup.py bdist_wheel
-      - name: Install twine
-        run: |
-          pip install twine
       - name: Push to test pypi
         run: |
           twine upload -repository-url https://test.pypi.org/legacy/ -u __token__ -p ${{ secrets.TEST_PYPI }} --cert /etc/ssl/certs/ca-bundle.trust.crt dist/*
