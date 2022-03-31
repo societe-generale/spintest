@@ -18,23 +18,25 @@ jobs:
         run: |
           pip install pytest --upgrade
           make install-dev
-      - name: Quality (with lint and bandit)
+      - name: Run Lint
         run: make lint
+      - name: Run Bandit
+        run: make bandit
       # - name: Run tests
       #   run: make test
-      - name: check branch name
-        run: echo "${{ github.ref }}"
   Deploy:
     runs-on: ubuntu-latest
     needs: [Build]
-    if: github.ref == 'refs/heads/master'
+    # if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
         with:
           python-version: '3.7' # Version range or exact version of a Python version to use, using SemVer's version range syntax
           architecture: 'x64'
-      - name: Check python
-        run: | 
-          python --version
-          pip freeze
+      - uses: casperdcl/deploy-pypi@v2
+        with:
+          password: ${{ secret.PYPI_TOKEN }}
+          pip: --version
+          # only upload if a tag is pushed (otherwise just build & check)
+          # upload: ${{ github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags') && github.ref == 'refs/heads/master' }}
