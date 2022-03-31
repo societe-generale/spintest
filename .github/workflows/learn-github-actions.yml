@@ -36,7 +36,7 @@ jobs:
           architecture: 'x64'
       - uses: casperdcl/deploy-pypi@v2
         with:
-          password: ${{ secret.PYPI_TOKEN }}
+          password: ${{ secrets.PYPI_TOKEN }}
           pip: --version
           # only upload if a tag is pushed (otherwise just build & check)
           # upload: ${{ github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags') && github.ref == 'refs/heads/master' }}
