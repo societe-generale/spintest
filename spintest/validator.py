@@ -15,7 +15,7 @@ TASK_SCHEMA = Schema(
             "headers",
             default={"Accept": "application/json", "Content-Type": "application/json"},
         ): dict,
-        Optional("output"): str,
+        Optional("output"): Or(dict, str),
         Optional("expected"): {
             Optional("code"): int,
             Optional("body"): Or(dict, str),
