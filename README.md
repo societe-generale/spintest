@@ -2,17 +2,15 @@
 
 Functional scenario interpreter.
 
-Spintest is a library that facilitates the integration and functional test of APIs. It takes a list of URLs in parameter and a list of tasks (also called scenario) that will be executed against the specified URLs.
+Spintest is a library that facilitates the integration and functional test of APIs. It takes as parameters a list of URLs and a list of tasks (also called scenarios) that will be executed against the specified URLs.
 
-Each task represents an API call and provides some options in order to validate or react to the response. Indeed, by default the task is in success if the HTTP code returned is between `200` and `299` included, but you can specify the error code or the body you expect. You can also provide a list of rollback tasks (or task references) that is executed if the task fails.
-
-Also, the response of the API call can be stored in order to be used in a future task.
-
-Finally, you can choose to run the task scenario concurrently on each URL.
+Each task represents an API call and provides some options in order to validate or react to the response. By default the task is a success if the HTTP code returned is `2XX` (200 to 299 included), but it is possible to specify the error code or the body that are expected. It is also possible to provide a list of rollback tasks (or task references) that are executed should the task fail.<br/>
+The response of the API calls can be stored in order to be used in a future task.
+The task scenarios can also be run concurrently in each URL.
 
 ## Installation
 
-You can install the package using PIP.
+The package can be installed using PIP.
 
 ```
 $ pip install spintest
@@ -20,7 +18,7 @@ $ pip install spintest
 
 ## URLs and tasks definition
 
-The url list is just a list of endpoints. A route added here will not be evaluated because the route definition is set on the task.
+The url list is a list of endpoints. A route added here will not be evaluated because the route definition is set on the task.
 
 ```
 [
@@ -29,9 +27,9 @@ The url list is just a list of endpoints. A route added here will not be evaluat
 ]
 ```
 
-The task definition is a little bit more complex. A scenario is a list of tasks possibly dependent to each other.
+The task definition is a little bit more detailed.<br />A scenario is a list of tasks possibly dependent to each other.
 
-A single task follow this schema :
+A single task follows the following schema :
 
 ```
 {
@@ -65,8 +63,8 @@ A single task follow this schema :
 - **route** (optional) is the route to test on the endpoint. It will be appended of the current URL (default is "/")
 - **name** (optional) is the name of the task. Mandatory if you want to use that task in a rollback.
 - **body** (optional) is a request body.
-- **header** (optional) is a dictionary of headers. Default is JSON application headers. For Oauth endpoint you don't need to add the appropriate header with the token (if you specify the token).
-- **output** (optional) Variable definition where Spintest put the result of the call. This result can be used later in an other task using Jinja syntax.
+- **header** (optional) is a dictionary of headers. Default is JSON application headers. For Oauth endpoint it is not necessary to add the appropriate header with the token (if the token is specified).
+- **output** (optional) Variable definition where Spintest puts the result of the call. This result can be used later in another task using Jinja syntax.
 - **expected** (optional) is an expected HTTP response code or response body.
     - **code** (optional) is the expected HTTP code.
     - **body** (optional) is an expected response body. You can put a value to *null* if you don't want to check the value of a key but you will have to set all keys. It also checks nested list and dictionary unless you put "null" instead.
@@ -77,8 +75,8 @@ A single task follow this schema :
     - **expected_match** is an option to check partially the keys present on your response body. By default it is set to strict.
 - **retry** (optional) is the number of retries if it fails (default is 0).
 - **delay** (optional) is the time in second to wait between retries (default is 1).
-- **ignore** (optional) is if you want to continue the scenario in case of error of this task.
-- **rollback** (optional) is a list of task names or tasks that is triggered in case of failure of the task.
+- **ignore** (optional) is to allow to continue the scenario in case of error of the task.
+- **rollback** (optional) is a list of task names or tasks that are triggered should the task fail.
 
 
 ## Usage
@@ -102,7 +100,7 @@ assert True is result
 
 This test will perform a GET call into `https://test.com/test` and expect a return code between `200` and `299` included.
 
-Here is another example with an interation between two routes :
+Here is another example with an interaction between two routes :
 
 ```python
 from spintest import spintest
@@ -126,10 +124,10 @@ result = spintest(urls, tasks)
 assert True is result
 ```
 
-As you can see, the first task has a key `output`. This way you can store the output of this first task into a `test_output` variables and be able to use it in following tasks in Jinja templating language.
-Morevoer, the second task has a key `expected`. Here we want to check a specific return code `204`.
+As seen here, the first task has a key `output`. This way it is possible to store the output of this first task into a `test_output` variables and be able to use it in following tasks in Jinja templating language.
+Moreover, the second task has a key `expected`. The specific return code `204` is expected.
 
-Finally a last example that show how to run tasks in several task in parallel.
+Finally here is a last example that shows how to run tasks in parallel.
 
 ```python
 from spintest import spintest
@@ -150,7 +148,8 @@ result = spintest(urls, tasks, parallel=True)
 assert True is result
 ```
 
-Here we provided two URLS and we have added the option `parallel` in `spintest` function. Without this option, the scenario will be executed iteratively on every URLS.
+Here two URLS are provided and the option `parallel` wad added in the `spintest` function.<br/>
+Without this option, the scenario will be executed iteratively on every URLS.
 
 But with this option, the each task of the scenario will be executed concurrently for every URLS.
 
@@ -158,9 +157,9 @@ One last word on the expected option. Here we want to validate that a certain ke
 
 ### Token management
 
-You can automatically include Oauth token into the task headers.
+Oauth token can be automatically included into the task headers.
 
-- You can directly hard code token
+- Tokens can be directly hard coded
 
 ```python
 urls = ["http://test.com"]
@@ -169,7 +168,7 @@ tasks = []
 spintest(urls, tasks, token= 'ABC')
 ```
 
-- You can give the generate function that create your token :
+- A method that generates a token can be given instead of a token
 
 ```python
 urls = ["http://test.com"]
@@ -180,7 +179,7 @@ spintest(urls, tasks, token=create_token)
 
 ### Rollback actions
 
-You can specify a list of rollback task that is executed in case of task failure.
+A list of rollback tasks that are executed in case of a task failure can be specified.
 
 ```python
 from spintest import spintest
@@ -202,7 +201,7 @@ tasks = [
 spintest(urls, tasks)
 ```
 
-You can also specify the name of a task to avoid rewriting them.
+The name of a task can be specified in order to prevent rewriting them
 
 ```python
 from spintest import spintest
@@ -219,7 +218,7 @@ tasks = [
     {
         "name": "test_delete",
         "method": "DELETE",
-        "route": "test,
+        "route": "test",
     }
 ]
 
@@ -228,8 +227,7 @@ spintest(urls, tasks)
 
 ### Run the tasks one by one
 
-
-You can also go further to control the flow of the task execution. It can be useful to perform other actions between tasks (clean up, external settings, ...)
+It is also possible to further control the flow of the task execution to perform additional actions between tasks ( clean up / additional settings / ... )
 
 
 ```python
@@ -252,15 +250,16 @@ assert "SUCCESS" == result["status"]
 ```
 
 
-The `next()` method throw a `StopAsyncIteration` if there is no task left to execute.
+The `next()` method throws a `StopAsyncIteration` if there are no tasks left to execute.
 
-Note: You can use the method `next()` in parallel mode. In that situation the method returns a list with the result of the task against each URLs.
+Note: The method `next()` can be used in parallel mode. In this case the method returns a list with the result of the task against each URLs.
+
 
 
 ### Type convertion
 
-Task template evaluation always returns a string, but sometimes the target API expects a non-string value,
-it can be useful to convert it to the corresponding type.
+Task template evaluation always returns a string, but sometimes the target API expects a non-string value.<br/>
+It is possible to convert it a the corresponding type if needed
 
 Spintest provides a set of json value converters that provide such functionality.
 
@@ -309,12 +308,12 @@ spintest(urls, tasks, token=token_write)
 
 ### Generate report
 
-Since the version 0.3.0 of spintest, you have the possibility to generate reports of your test execution.
+Since the version 0.3.0 of spintest, generating reports of test execution is possible.
 
-This report will contain all information that you written [See this paragraph](https://github.com/societe-generale/spintest#urls-and-tasks-definition), and on each tasks you will find the return payload and the execution time.
-Finally, at the end you will find the total execution time of your test execution. 
+The report will contain all information that were written [here](https://github.com/societe-generale/spintest#urls-and-tasks-definition), and on each tasks the return payload and the execution time are attached.<br/>
+At the end of the report the total execution time of the tests is indicated.
 
-To use this fonctionality please use this piece of code : 
+To use this functionality use this piece of code :
 
 ```
 from spintest import spintest
@@ -331,9 +330,8 @@ result = spintest(urls, tasks, generate_report="report_name")
 assert True is result
 ```
 
-Report with the name "report_name" will be create.
-
-to avoid to create multiple "report_name", this report will be overwrite on each test execution.
+A report with the name "report_name" will be create.<br/>
+To avoid to creating multiple "report_name", this report will be overwrote on each test execution.
 
 ### Raise to avoid long test execution
 
@@ -372,4 +370,3 @@ tasks = [
 result = spintest(urls, tasks, generate_report="report_name")
 assert True is result
 ```
-
