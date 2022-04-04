@@ -1,0 +1,45 @@
+name: learn-github-actions
+on: [push]
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.6.8", "3.7", "3.8", "3.9"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: 'x64'
+      - name: Install dependencies
+        run: |
+          pip install pytest --upgrade
+          make install-dev
+      - name: Run Lint
+        run: make lint
+      - name: Run Bandit
+        run: make bandit
+      - name: Run tests
+        run: make test
+  Deploy:
+    runs-on: ubuntu-latest
+    needs: [Build]
+    if: github.ref == 'refs/heads/master' && startsWith(github.event.ref, 'refs/tags')
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.7'
+          architecture: 'x64'
+      - name: Install needed packages to push new version on PyPi
+        run: |
+          pip install wheel
+          pip install twine
+      - name: Build spintest package
+        run : | 
+          python setup.py bdist_wheel
+      - name: Push to test pypi
+        run: |
+          twine upload --repository-url https://upload.pypi.org/ --username __token__ --password ${{ secrets.PYPI_TOKEN }} dist/*
