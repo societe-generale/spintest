@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.2 (2022/04/04)
+* Fix issues on Documentation
+* Remove Travis CI and add Github Actions
+* Fix output value for rollback issue
+
+## v0.4.1 (2021/09/20)
+* Fix token argument type hint
+
 ## v0.4.0 (2021/02/01)
 * Add capabilty to stop test execution if some elements are present on "fail_on" definition ([#11](https://github.com/societe-generale/spintest/pull/11))
 
