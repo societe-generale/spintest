@@ -8,6 +8,7 @@ from typing import Callable, Dict, List, Union, Optional
 
 from spintest import logger
 from spintest.task import Task
+from spintest.e2e_task import E2ETask
 
 
 class TaskManager(object):
@@ -113,11 +114,19 @@ class TaskManager(object):
                     yield self._error(critical="Invalid rollback schema.")
                     return
 
-                result = await Task(
-                    url, task, output=self.outputs[0].copy(), verify=self.verify
-                ).run()
+                if task.get("type") == "e2e":
+                    e2e_task = E2ETask(
+                        url=url,
+                        task=task,
+                        # **task.get("kwargs", {})
+                    )
+                    result = await e2e_task.run()
+                else:
+                    result = await Task(
+                        url, task, output=self.outputs[0].copy(), verify=self.verify
+                    ).run()
 
-                self.outputs = [result["output"]]
+                    self.outputs = [result["output"]]
 
                 yield [result]
                 if result["status"] != "SUCCESS" and result["ignore"] is False:
