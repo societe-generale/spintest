@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.4.3 (2025/07/25)
+* Add E2ETask class to handle end-to-end (E2E) testing with async task execution and schema validation.
+
 ## v0.4.2 (2022/04/04)
 * Fix issues on Documentation
 * Remove Travis CI and add Github Actions

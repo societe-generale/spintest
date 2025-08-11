@@ -33,6 +33,7 @@ A single task follows the following schema :
 
 ```
 {
+    Optional("type", default="http_request"): Or("http_request", "e2e"),
     "method": str,
     Optional("route", default="/"): str,
     Optional("name"): str,
@@ -47,6 +48,8 @@ A single task follows the following schema :
         Optional("body"): Or(dict, str),
         Optional("expected_match", default="strict"): Or("partial", "strict"),
     },
+    Optional("target"): callable,
+    Optional("target_input", default={}): dict,
     Optional("fail_on"): [{
         Optional("code"): int,
         Optional("body"): Or(dict, str),
@@ -59,6 +62,12 @@ A single task follows the following schema :
 }
 ```
 
+- **type** (optional) specifies the type of task to execute.<br/>
+    Supported values: `"http_request"` or `"e2e"`.  
+    - `"http_request"`: Used for standard HTTP requests with methods like GET, POST, DELETE, etc.<br/>
+    - `"e2e"`: Used for end-to-end testing tasks that execute asynchronous functions defined in the `target` field.<br/>
+
+    If not specified, the default value is `"http_request"`.
 - **method** is the HTTP method of the request (GET, POST, DELETE, ...). Only a valid HTTP method is accepted.
 - **route** (optional) is the route to test on the endpoint. It will be appended of the current URL (default is "/")
 - **name** (optional) is the name of the task. Mandatory if you want to use that task in a rollback.
@@ -69,6 +78,19 @@ A single task follows the following schema :
     - **code** (optional) is the expected HTTP code.
     - **body** (optional) is an expected response body. You can put a value to *null* if you don't want to check the value of a key but you will have to set all keys. It also checks nested list and dictionary unless you put "null" instead.
     - **expected_match** is an option to check partially the keys present on your response body. By default it is set to strict.
+- **target** (optional) is applicable only for tasks of type `"e2e"`.  
+    - Defines the asynchronous function (`async def`) to be executed during the E2E task.  
+    - The function must accept the `url` and other parameters and handle the task logic.  
+    - The `target` must be a callable and an asynchronous coroutine function.  
+    - The function can optionally return a dictionary (`dict`) containing additional data or results.  
+    - Example:  
+    ```python
+    async def sample_target(url):
+        # Your async logic here
+        # Optionally return a dictionary
+        return {"key": "value"}
+    ```
+- **target_input** (optional) is applicable only for tasks of type `"e2e"`. It holds all inputs for the target function in a single dictionary.
 - **fail_on** (optional) is a list of error HTTP response code or response body. Once one of these error occurs, the test fails without retries.
     - **code** (optional) is the expected HTTP code.
     - **body** (optional) is an expected response body. You can put a value to *null* if you don't want to check the value of a key but you will have to set all keys. It also checks nested list and dictionary unless you put "null" instead.
@@ -81,24 +103,63 @@ A single task follows the following schema :
 
 ## Usage
 
-A first example with a single route.
+A first simple example.
 
 ```python
 from spintest import spintest
+
+async def target(url):
+    # Simulate a successful E2E task
+    assert url == "http://test.com"
 
 urls = ["https://test.com"]
 tasks = [
     {
         "method": "GET",
         "route": "test",
-    }
+    },
+    {
+        "type": "e2e", 
+        "target": target
+    },
 ]
 
 result = spintest(urls, tasks)
 assert True is result
 ```
 
-This test will perform a GET call into `https://test.com/test` and expect a return code between `200` and `299` included.
+This test will perform a GET call into `https://test.com/test` and expect a return code between `200` and `299` included, and execute the `target` function.
+
+Here is another example with input and output for the e2e task:
+
+```python
+from spintest import spintest
+
+async def target(url):
+        return {"result": "success"}
+
+async def target_check_output(url, result):
+    assert url == "http://test.com"
+    assert result == "success"
+
+tasks = [
+    {
+        "type": "e2e",
+        "target": target,
+        "target_input": {},
+        "output": "task_output",
+    },
+    {
+        "type": "e2e",
+        "target": target_check_output,
+        "target_input": "{{ task_output }}",
+    },
+]
+
+result = spintest(["http://test.com"], tasks)
+
+assert result is True
+```
 
 Here is another example with an interaction between two routes :
 
@@ -305,6 +366,23 @@ tasks = [
 
 spintest(urls, tasks, token=token_write)
 ```
+
+### E2E Task
+**Define an E2E Task**:
+   - Use the `"type": "e2e"` in your task configuration to specify an E2E task.
+   - Provide an asynchronous `target` function that will be executed as part of the task.
+
+**Schema for E2E Tasks**:
+   The `target` field in the task schema must be a callable async function. Example:
+   ```python
+   TASK_SCHEMA = Schema(
+       {
+           "type": "e2e", # Must be passed
+           "target": callable,  # Must be an async function
+           ...
+       }
+   )
+   ```
 
 ### Generate report
 
