@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.4.3 (2025/07/25)
+## v0.5.0 (2025/08/11)
 * Add E2ETask class to handle end-to-end (E2E) testing with async task execution and schema validation.
 
 ## v0.4.2 (2022/04/04)
