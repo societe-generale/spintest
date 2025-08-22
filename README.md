@@ -80,12 +80,12 @@ A single task follows the following schema :
     - **expected_match** is an option to check partially the keys present on your response body. By default it is set to strict.
 - **target** (optional) is applicable only for tasks of type `"e2e"`.  
     - Defines the asynchronous function (`async def`) to be executed during the E2E task.  
-    - The function must accept the `url` and other parameters and handle the task logic.  
+    - The function must accept the `url` and other *input* parameters as `**kwargs`. It handle the task logic.  
     - The `target` must be a callable and an asynchronous coroutine function.  
-    - The function can optionally return a dictionary (`dict`) containing additional data or results.  
+    - The function can optionally return a dictionary (`dict`) containing additional data or results that can be catch as step *output*.  
     - Example:  
     ```python
-    async def sample_target(url):
+    async def sample_target(url, **kwargs):
         # Your async logic here
         # Optionally return a dictionary
         return {"key": "value"}
@@ -108,7 +108,7 @@ A first simple example.
 ```python
 from spintest import spintest
 
-async def target(url):
+async def target((url, **kwargs)):
     # Simulate a successful E2E task
     assert url == "http://test.com"
 
@@ -135,12 +135,12 @@ Here is another example with input and output for the e2e task:
 ```python
 from spintest import spintest
 
-async def target(url):
+async def target(url, **kwargs):
         return {"result": "success"}
 
-async def target_check_output(url, result):
+async def target_check_output(url, **kwargs):
     assert url == "http://test.com"
-    assert result == "success"
+    assert kwargs.get("result") == "success"
 
 tasks = [
     {
