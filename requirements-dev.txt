@@ -2,6 +2,7 @@ flake8
 bandit
 pytest
 pytest-cov
+pytest-asyncio
 bumpversion
 black
 doubles

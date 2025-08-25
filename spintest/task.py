@@ -98,10 +98,12 @@ class Task(object):
             if not set(expected).issubset(body):
                 return False
 
-            return all([
-                self._compare_body(body[ek], expected[ek], match_mode)
-                for ek in expected.keys()
-            ])
+            return all(
+                [
+                    self._compare_body(body[ek], expected[ek], match_mode)
+                    for ek in expected.keys()
+                ]
+            )
 
         elif isinstance(body, list):
             if match_mode == "strict":
@@ -147,8 +149,7 @@ class Task(object):
             code = fail_on.get("code")
             if code and code == self._response_code():
                 return self._response(
-                    "FAILED",
-                    "HTTP status code correspond with the fail_on code."
+                    "FAILED", "HTTP status code correspond with the fail_on code."
                 )
 
     def validate_fail_on_body(self):

@@ -27,10 +27,12 @@ def test_fail_on_in_partial_mode():
                     "body": {"keys": ["ok"]},
                     "expected_match": "strict",
                 },
-                "fail_on": [{
-                    "body": {"keys": ["ko"]},
-                    "expected_match": "partial",
-                }],
+                "fail_on": [
+                    {
+                        "body": {"keys": ["ko"]},
+                        "expected_match": "partial",
+                    }
+                ],
                 "retry": 1,
                 "delay": 0,  # Make test quicker
             }
@@ -62,10 +64,12 @@ def test_fail_on_in_strict_mode():
                     "body": {"keys": ["ok"]},
                     "expected_match": "strict",
                 },
-                "fail_on": [{
-                    "body": {"keys": ["ko"]},
-                    "expected_match": "strict",
-                }],
+                "fail_on": [
+                    {
+                        "body": {"keys": ["ko"]},
+                        "expected_match": "strict",
+                    }
+                ],
                 "retry": 1,
                 "delay": 0,  # Make test quicker
             }
@@ -98,9 +102,11 @@ def test_return_failure_immediately_when_response_is_in_fail_on_body():
                 "expected": {
                     "body": {"resource": "CREATED"},
                 },
-                "fail_on": [{
-                    "body": {"resource": "FAILED"},
-                }],
+                "fail_on": [
+                    {
+                        "body": {"resource": "FAILED"},
+                    }
+                ],
                 "retry": 2,
                 "delay": 0,  # Make test quicker
             }

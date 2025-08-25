@@ -1,4 +1,5 @@
 """Test schema validation."""
+
 import pytest
 
 from spintest.validator import input_validator, TASK_SCHEMA

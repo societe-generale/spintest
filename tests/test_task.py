@@ -922,11 +922,13 @@ def test_task_next():
     assert {
         "method": "GET",
         "route": "/test",
+        "target_input": {},
         "headers": {"Accept": "application/json", "Content-Type": "application/json"},
         "retry": 0,
         "delay": 1,
         "ignore": False,
         "duration_sec": 42.0,
+        "type": "http_request",
     } == result["task"]
 
     assert {"__token__": None} == result["output"]

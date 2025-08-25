@@ -8,6 +8,7 @@ from typing import Callable, Dict, List, Union, Optional
 
 from spintest import logger
 from spintest.task import Task
+from spintest.e2e_task import E2ETask
 
 
 class TaskManager(object):
@@ -113,9 +114,19 @@ class TaskManager(object):
                     yield self._error(critical="Invalid rollback schema.")
                     return
 
-                result = await Task(
-                    url, task, output=self.outputs[0].copy(), verify=self.verify
-                ).run()
+                if task.get("target") is None:
+                    task["type"] = "http_request"
+
+                if task.get("type") != "http_request":
+                    result = await E2ETask(
+                        url=url,
+                        task=task,
+                        output=self.outputs[0].copy(),
+                    ).run()
+                else:
+                    result = await Task(
+                        url, task, output=self.outputs[0].copy(), verify=self.verify
+                    ).run()
 
                 self.outputs = [result["output"]]
 
@@ -230,4 +241,5 @@ class TaskManager(object):
     def _hide_token_from_all_reports(all_reports):
         for suite_report in all_reports:
             for task_report in suite_report["reports"]:
-                task_report["output"]["__token__"] = "***"  # nosec
+                if "output" in task_report:
+                    task_report["output"]["__token__"] = "***"  # nosec
