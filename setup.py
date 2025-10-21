@@ -11,7 +11,7 @@ def parse_requirements(requirements_file):
 
 setup(
     name="spintest",
-    version="0.5.0",
+    version="0.5.1",
     license="BSD-3-Clause",
     author="Nicolas Boissinot",
     author_email="nicolas.boissinot@gmail.com",
